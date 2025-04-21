@@ -6,6 +6,7 @@ import zxcvbn from 'zxcvbn';
 import { useForm } from '@tanstack/react-form';
 import { useNavigate } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
+import { useMutation } from '@tanstack/react-query'; 
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -17,22 +18,33 @@ function App() {
   const [passwordFeedback, setPasswordFeedback] = useState('');
   const [passwordValid, setPasswordValid] = useState(false);
   const [emailValid, setEmailValid] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [isPasswordTyped, setIsPasswordTyped] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const navigate = useNavigate();
 
+  //  useMutation handles async login
+  const loginMutation = useMutation({
+    mutationFn: async (values) => {
+      const { userName, password } = values; 
+      // Simulate network call
+      await new Promise((res) => setTimeout(res, 2000));
+      console.log('User:', userName, 'Password:', password); 
+      return { success: true };
+    },
+    onSuccess: () => {
+      navigate({ to: '/home' });
+    },
+  });
+
   const form = useForm({
-    userName: "",
-    password: "",
+    defaultValues: {
+      userName: "",
+      password: "",
+    },
     onSubmit: async (values) => {
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        navigate({ to: '/home' });
-      }, 2000);
+      loginMutation.mutate(values); // Call mutation
     },
   });
 
@@ -74,6 +86,7 @@ function App() {
               form.handleSubmit();
             }}>
 
+              {/* Email */}
               <div className="mb-6 text-left relative min-w-full">
                 <form.Field
                   name="userName"
@@ -97,7 +110,7 @@ function App() {
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                           className={`w-full p-3 bg-gray-800 text-white rounded-lg border-2 
-                                    border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 ${emailValid ? 'border-green-500' : 'border-red-500'}`}
+                            border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 ${emailValid ? 'border-green-500' : 'border-red-500'}`}
                         />
                         <button type="button" className="absolute text-sky-600 top-1/2 right-3 transform -translate-y-1/2">
                           <FaUser size={20} />
@@ -114,6 +127,7 @@ function App() {
                 />
               </div>
 
+              {/* Password */}
               <div className="mb-6 text-left relative min-w-full">
                 <form.Field
                   name="password"
@@ -138,7 +152,7 @@ function App() {
                             setIsPasswordTyped(true);
                           }}
                           className={`w-full p-3 bg-gray-800 text-white rounded-lg border-2 
-                                    border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 ${passwordValid ? 'border-green-500' : 'border-red-500'}`}
+                            border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all duration-300 ${passwordValid ? 'border-green-500' : 'border-red-500'}`}
                         />
                         <button
                           type="button"
@@ -162,6 +176,7 @@ function App() {
                 />
               </div>
 
+              {/* Remember Me + Forgot */}
               <div className="flex justify-between items-center mb-6">
                 <label className="text-white text-sm">
                   <input type="checkbox" className="mr-2" />
@@ -176,13 +191,14 @@ function App() {
                 </button>
               </div>
 
+              {/* Submit Button */}
               <button
                 type="submit"
                 className={`font-semibold text-lg w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-full 
-                            transition-all duration-300 hover:scale-105 hover:shadow-lg hover:from-cyan-600 hover:to-purple-700 ${loading ? 'cursor-wait opacity-50' : ''}`}
-                disabled={loading || !emailValid || !passwordValid}
+                  transition-all duration-300 hover:scale-105 hover:shadow-lg hover:from-cyan-600 hover:to-purple-700 ${loginMutation.isPending ? 'cursor-wait opacity-50' : ''}`}
+                disabled={loginMutation.isPending || !emailValid || !passwordValid}
               >
-                {loading ? (
+                {loginMutation.isPending ? (
                   <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
                   </div>
@@ -192,6 +208,7 @@ function App() {
               </button>
             </form>
           ) : (
+            // Forgot Password Form
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -205,25 +222,14 @@ function App() {
                   type="email"
                   id="resetEmail"
                   placeholder="Email"
-                  className="w-full mt-2 p-3 bg-gray-800 text-white rounded-lg border-2 border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
-                  required
+                  className="w-full mt-2 p-3 bg-gray-800 text-white rounded-lg border-2 border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
-
               <button
                 type="submit"
-                className="font-semibold text-lg w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-full 
-                transition-all duration-300 hover:scale-105 hover:shadow-lg hover:from-cyan-600 hover:to-purple-700"
+                className="font-semibold text-lg w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-full"
               >
                 Send Reset Link
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowForgotPassword(false)}
-                className="text-sm mt-4 text-sky-400 underline"
-              >
-                Back to Login
               </button>
             </form>
           )}

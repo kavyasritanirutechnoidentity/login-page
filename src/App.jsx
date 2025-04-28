@@ -12,7 +12,7 @@ export const Route = createFileRoute('/')({
   component: App,
 });
 
-function App() {
+function App(){
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [passwordFeedback, setPasswordFeedback] = useState('');
@@ -80,6 +80,7 @@ function App() {
             {showForgotPassword ? 'Reset Password' : 'Login'}
           </h1>
 
+          
           {!showForgotPassword ? (
             <form onSubmit={(e) => {
               e.preventDefault();

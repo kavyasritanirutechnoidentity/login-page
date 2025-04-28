@@ -10,4 +10,3 @@ export async function picSumApi() {
     console.log(error, "erro while fetching the data in utils ")
    }
 }
-

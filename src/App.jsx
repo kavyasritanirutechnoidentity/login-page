@@ -47,6 +47,9 @@ function App(){
       loginMutation.mutate(values); // Call mutation
     },
   });
+  onerror = (error) => {
+    console.error('Error:', error); // Handle error
+  }
 
   const checkPasswordStrength = (password) => {
     const result = zxcvbn(password);
